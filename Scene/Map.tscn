@@ -1,0 +1,41 @@
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://Assets/Img/ground.jpg" type="Texture" id=1]
+[ext_resource path="res://Assets/Img/slope_texture.jpg" type="Texture" id=2]
+[ext_resource path="res://Assets/Img/cube_face.jpg" type="Texture" id=3]
+[ext_resource path="res://Actors/Player/Player.tscn" type="PackedScene" id=4]
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_texture = ExtResource( 1 )
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_texture = ExtResource( 3 )
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_texture = ExtResource( 2 )
+
+[node name="Map" type="Spatial"]
+
+[node name="Player" parent="." instance=ExtResource( 4 )]
+
+[node name="CSGCombiner" type="CSGCombiner" parent="."]
+use_collision = true
+collision_mask = 0
+
+[node name="Ground" type="CSGBox" parent="CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0361218, -0.0264329, -0.149784 )
+width = 30.0
+height = 1.0
+depth = 30.0
+material = SubResource( 1 )
+
+[node name="Box" type="CSGBox" parent="CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2, -6.5 )
+height = 3.0
+depth = 5.0
+material = SubResource( 2 )
+
+[node name="Slope" type="CSGPolygon" parent="CSGCombiner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
+polygon = PoolVector2Array( -4.5, 0, -1, 1, 1, 1, 1, 0 )
+material = SubResource( 3 )
