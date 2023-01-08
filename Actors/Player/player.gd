@@ -12,16 +12,50 @@ export var acceleration: float = 10.0
 export var jump_impulse: float = 15.0
 
 
+# Weapon System
+var weapons = []
+var current_weapon_index = 0
+
+onready var gun1 = $Head/Hand/gun1
+
+func weapon_select():
+	
+	if Input.is_action_just_pressed("weapon1"):
+		if current_weapon_index == 1:
+			current_weapon_index = 0
+		else:
+			current_weapon_index = 1
+		
+		
+
+	if current_weapon_index == 1:
+		gun1.visible = true
+	else:
+		gun1.visible = false
+	
+
+		
+func switch_weapon():
+		current_weapon_index += 1
+		
+		if current_weapon_index >= weapons.size():
+			current_weapon_index = 0
+
+# Velocity
 
 var velocity: Vector3 = Vector3.ZERO
 
 onready var head: Spatial = $Head
 
 func _ready():
+	
+	
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	
 	
 func _physics_process(delta):
+	
+		weapon_select()
 		var movement = _get_movement_direction()	
 		
 		velocity.x = lerp(velocity.x, movement.x * speed, acceleration * delta)
