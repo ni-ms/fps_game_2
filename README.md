@@ -6,8 +6,11 @@ TODO:
 - create some maps
 - work on the character
 - enemy system
+- add wallrunning maybe make a parkour movement system?
+
+Done:
 - make a more advanced movement system
 
 
 What works:
-- basic movement
+- advanced movement system
