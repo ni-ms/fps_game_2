@@ -1,16 +1,23 @@
 extends KinematicBody
 
-const MIN_CAM_ANGLE = -60
-const MAX_CAM_ANGLE = 70
+var speed = 7
+const ACCEL_DEFAULT = 7
+const ACCEL_AIR = 1
+onready var accel = ACCEL_DEFAULT
+var gravity = 9.8
+var jump = 5
 
-const GRAVITY = -30
+var cam_accel = 40
+var mouse_sense = 0.1
+var snap
 
+var direction = Vector3()
+var velocity = Vector3()
+var gravity_vec = Vector3()
+var movement = Vector3()
 
-export var camera_sensitivity: float = 0.05
-export var speed: float = 10.0
-export var acceleration: float = 10.0
-export var jump_impulse: float = 15.0
-
+onready var head = $Head
+onready var camera = $Head/Camera
 
 # Weapon System
 var weapons = []
@@ -41,51 +48,54 @@ func switch_weapon():
 		if current_weapon_index >= weapons.size():
 			current_weapon_index = 0
 
-# Velocity
-
-var velocity: Vector3 = Vector3.ZERO
-
-onready var head: Spatial = $Head
-
 func _ready():
-	
-	
+	#hides the cursor
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	
-	
-func _physics_process(delta):
-	
-		weapon_select()
-		var movement = _get_movement_direction()	
+
+func _input(event):
+	#get mouse input for camera rotation
+	if event is InputEventMouseMotion:
+		rotate_y(deg2rad(-event.relative.x * mouse_sense))
+		head.rotate_x(deg2rad(-event.relative.y * mouse_sense))
+		head.rotation.x = clamp(head.rotation.x, deg2rad(-89), deg2rad(89))
+
+func _process(delta):
+	#camera physics interpolation to reduce physics jitter on high refresh-rate monitors
+	if Engine.get_frames_per_second() > Engine.iterations_per_second:
+		camera.set_as_toplevel(true)
+		camera.global_transform.origin = camera.global_transform.origin.linear_interpolate(head.global_transform.origin, cam_accel * delta)
+		camera.rotation.y = rotation.y
+		camera.rotation.x = head.rotation.x
+	else:
+		camera.set_as_toplevel(false)
+		camera.global_transform = head.global_transform
 		
-		velocity.x = lerp(velocity.x, movement.x * speed, acceleration * delta)
-		velocity.z = lerp(velocity.z, movement.z * speed, acceleration * delta)
-		velocity.y += GRAVITY * delta
-		velocity = move_and_slide(velocity, Vector3.UP)
-
-func _unhandled_input(event):
-		if event is InputEventMouseMotion:
-				_handle_camera_rotation(event)
-
-func _handle_camera_rotation(event):
-		rotate_y(deg2rad(-event.relative.x * camera_sensitivity))
-		head.rotate_z((deg2rad(-event.relative.y * camera_sensitivity)))
-		head.rotation.z = clamp(head.rotation.z, deg2rad(MIN_CAM_ANGLE), deg2rad(MAX_CAM_ANGLE))
-
-
-
-func _get_movement_direction():
-	var direction = Vector3.DOWN
+func _physics_process(delta):
+	#get keyboard input
+	direction = Vector3.ZERO
+	var h_rot = global_transform.basis.get_euler().y
+	var f_input = Input.get_action_strength("back") - Input.get_action_strength("forward")
+	var h_input = Input.get_action_strength("right") - Input.get_action_strength("left")
+	direction = Vector3(h_input, 0, f_input).rotated(Vector3.UP, h_rot).normalized()
 	
-	if Input.is_action_pressed("back"):
-		direction -= transform.basis.x
-	if Input.is_action_pressed("forward"):
-		direction += transform.basis.x
-	if Input.is_action_pressed("left"):
-		direction -= transform.basis.z
-	if Input.is_action_pressed("right"):
-		direction += transform.basis.z
-	if Input.is_action_pressed("jump") and is_on_floor():
-		velocity.y = jump_impulse
+	#jumping and gravity
+	if is_on_floor():
+		snap = -get_floor_normal()
+		accel = ACCEL_DEFAULT
+		gravity_vec = Vector3.ZERO
+	else:
+		snap = Vector3.DOWN
+		accel = ACCEL_AIR
+		gravity_vec += Vector3.DOWN * gravity * delta
+		
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		snap = Vector3.ZERO
+		gravity_vec = Vector3.UP * jump
 	
-	return direction.normalized()
+	#make it move
+	velocity = velocity.linear_interpolate(direction * speed, accel * delta)
+	movement = velocity + gravity_vec
+	
+	move_and_slide_with_snap(movement, snap, Vector3.UP)
+	
+	
