@@ -71,6 +71,11 @@ func _process(delta):
 		camera.global_transform = head.global_transform
 		
 func _physics_process(delta):
+	#shooting mechanism
+	
+	if Input.is_action_just_pressed("left_click"):
+		gun1.Shoot()
+	
 	#get keyboard input
 	direction = Vector3.ZERO
 	var h_rot = global_transform.basis.get_euler().y

@@ -41,10 +41,10 @@ shape = SubResource( 5 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.024, 3, 0 )
 
 [node name="Hand" type="Spatial" parent="Head"]
-transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 1.0046, -0.702, -1.976 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.0046, -0.702, -1.976 )
 
 [node name="gun1" parent="Head/Hand" instance=ExtResource( 2 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.187439, 0.33513, -0.173224 )
+transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.187439, 0.33513, -0.173224 )
 
 [node name="Camera" type="Camera" parent="Head"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.978 )
